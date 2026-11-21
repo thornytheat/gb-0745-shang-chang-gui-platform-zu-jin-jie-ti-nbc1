@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "ledger.jinja" import register %}
+{% block stage %}
+<div class="claim-banner panel {{ 'blocked' if not run['认领清单']['可发布'] else 'ready' }}">
+  <div>
+    <h2>发布状态：{{ '暂缓发布（有凭证被隔离）' if not run['认领清单']['可发布'] else '可发布' }}</h2>
+    <p>认领批次 <code>{{ run['认领清单']['认领批次'] }}</code> · 源结算批次 <code>{{ run['认领清单']['源批次'] }}</code> · 隔离 {{ run['认领清单']['隔离凭证数'] }} 张</p>
+  </div>
+  <a data-export href="{{ url_for('claim.export_claim', claim_id=meta['批次']) }}">下载认领凭证</a>
+</div>
+<form id="claim-form" class="claim-upload panel" method="post" action="/api/claims" enctype="multipart/form-data">
+  <label>账期<input name="period" type="month" required value="{{ meta['账期'] }}"></label>
+  <label class="upload">上传含 vouchers 的账簿 JSON<input type="file" name="file" accept=".json,application/json" required></label>
+  <button type="submit">生成缴款认领</button>
+  <output id="claim-feedback" role="status">{% if reused %}已复用该认领批次，未重复核销{% endif %}</output>
+</form>
+<div class="register-grid">
+  <section class="panel ledger-panel">
+    <div class="panel-head"><h2>分柜台核销结果</h2><span>{{ run['柜台认领']|length }} 个柜台</span></div>
+    <div class="table-scroll" tabindex="0" aria-label="分柜台核销结果">
+      <table>
+        <thead><tr><th scope="col">柜台</th><th scope="col">账单日</th><th scope="col" class="num">应缴</th><th scope="col" class="num">月结实缴</th><th scope="col" class="num">本次核销</th><th scope="col" class="num">核销后欠缴</th></tr></thead>
+        <tbody>{% for row in run['柜台认领'] %}
+        <tr><td>{{ row['柜台'] }}</td><td>{{ row['账单日'] }}</td><td class="num">{{ row['应缴分']|yuan }}</td><td class="num">{{ row['月结实缴分']|yuan }}</td><td class="num">{{ row['本次核销分']|yuan }}</td><td class="num">{{ row['核销后欠缴分']|yuan }}</td></tr>
+        {% endfor %}</tbody>
+      </table>
+    </div>
+  </section>
+  {{ register('一张凭证分到哪些柜台（凭证核销）', run['凭证核销']) }}
+  {{ register('待认领余款（不挪补别柜）', run['待认领余款']) }}
+  {{ register('凭证隔离（修正前不发布）', run['凭证隔离']) }}
+  {{ register('原始凭证留痕', run['原始凭证']) }}
+</div>
+{% endblock %}

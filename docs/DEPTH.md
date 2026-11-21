@@ -15,6 +15,7 @@
 | M5 退单回冲 | 追原流水，重算旧月应计差 | `GET /api/refunds/{id}` | `app/modules/m5_refunds/credits.py` `app/modules/m5_refunds/service.py` | `tests/test_refunds.py` |
 | M6 租金勾稽 | 核对实缴、欠缴与账簿行数 | `GET /api/reconcile/{id}` | `app/modules/m6_reconcile/service.py` `app/modules/m6_reconcile/totals.py` | `tests/test_reconcile.py` |
 | M7 结算复核 | 从批次凭证复算、下载证据 | `GET /api/publish/{id}` `POST /api/runs` | `app/modules/m7_publish/service.py` `app/modules/m7_publish/export.py` `app/store.py` | `tests/test_publish.py` |
+| M8 缴款认领 | 转账凭证按柜台核销、账龄分配与隔离 | `GET /api/claim/{id}` `POST /api/claims` | `app/modules/m8_claim/engine.py` `app/modules/m8_claim/vouchers.py` `app/modules/m8_claim/service.py` | `tests/test_claim.py` |
 
 ## 陷阱登记
 
@@ -31,6 +32,11 @@
 | TRAP-17 | `mall.json` 旧金额字段 gross | 旧账对应列丢失 | 显式兼容别名 | `app/modules/m1_intake/service.py` | `tests/test_intake.py::test_legacy_alias` |
 | TRAP-23 | `mall.json` 合同于当日切换 | 同时计入两个版本 | 合同 `[start,end)` | `app/modules/m2_contracts/versions.py` | `tests/test_contracts.py::test_adjacent_boundaries` |
 | TRAP-25 | `mall.json` 存在合同重叠 | 随机采信一版 | 暂停区间内归属并提供冲突区间 | `app/modules/m2_contracts/service.py` | `tests/test_contracts.py::test_overlap_not_guessed` |
+| TRAP-31 | 合并转账只写总额 | 全记给一个柜台或按金额摊派 | 按账单日账龄依次清最久欠柜台 | `app/modules/m8_claim/engine.py` | `tests/test_claim.py::test_unmarked_voucher_pays_oldest_first` |
+| TRAP-32 | 凭证注明已缴清柜台 | 余款自动挪补别柜欠费 | 挂待认领余款，不跨柜冲抵 | `app/modules/m8_claim/engine.py` | `tests/test_claim.py::test_named_cleared_shop_keeps_money_and_does_not_spill` |
+| TRAP-33 | 凭证金额大于柜台欠缴 | 把柜台冲成负数 | 核销封顶在欠缴，超出挂余款 | `app/modules/m8_claim/engine.py` | `tests/test_claim.py::test_shop_never_written_off_beyond_its_arrears` |
+| TRAP-34 | 凭证缺金额或柜台不存在 | 当作零元/随便挂柜发布 | 隔离并标记整批暂缓发布 | `app/modules/m8_claim/vouchers.py` | `tests/test_claim.py::test_quarantine_missing_amount_and_unknown_shop` |
+| TRAP-35 | 同批凭证重复提交 | 重复核销同一笔款 | 批次摘要幂等，重跑复用旧版 | `app/modules/m8_claim/service.py` | `tests/test_claim.py::test_idempotent_rerun_does_not_double_write` |
 
 ## 验算
 

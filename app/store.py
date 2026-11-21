@@ -30,7 +30,8 @@ class RunStore:
 
     def history(self):
         with closing(self.connect()) as db:
-            return [
-                json.loads(row[0])["运行清单"]
-                for row in db.execute("SELECT payload FROM runs ORDER BY rowid DESC LIMIT 40")
-            ]
+            summaries = []
+            for row in db.execute("SELECT payload FROM runs ORDER BY rowid DESC LIMIT 40"):
+                payload = json.loads(row[0])
+                summaries.append(payload["运行清单"] if "运行清单" in payload else payload["认领清单"])
+            return summaries

@@ -10,6 +10,11 @@ REASONS = {
     "REFUND_LIMIT": "累计退款超过原款",
     "REFUND_SHOP": "退单柜台与原单不同",
     "AFTER_CUT": "晚于结账截止日",
+    "VOUCHER_FIELD": "凭证字段无效",
+    "VOUCHER_AMOUNT": "凭证金额缺失或格式有误",
+    "VOUCHER_SHOP": "凭证注明的柜台不存在",
+    "VOUCHER_DUPLICATE": "凭证编号重复",
+    "VOUCHER_DATE": "凭证日期无效",
 }
 
 

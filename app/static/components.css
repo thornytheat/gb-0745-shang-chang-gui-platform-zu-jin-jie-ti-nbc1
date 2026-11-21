@@ -41,6 +41,13 @@ tbody tr:hover { background: var(--surface-2); }
 .num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .empty, .archive { padding-inline: 16px; }
 .archive { padding-inline-start: 36px; }
+.claim-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 18px; border-left: 6px solid var(--ok); }
+.claim-banner.blocked { border-left-color: var(--bad); }
+.claim-banner h2 { margin: 0 0 4px; font: 700 18px var(--display); }
+.claim-banner p { margin: 0; color: var(--muted); font-size: 12px; }
+.claim-upload { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; padding: 14px 18px; }
+.claim-upload output { min-height: 34px; display: flex; align-items: center; color: var(--muted); }
+.claim-upload output[data-error] { color: var(--bad); }
 @media print {
   body { display: block; color: #111; background: white; }
   .rail, #run-form, #print, [data-export] { display: none; }

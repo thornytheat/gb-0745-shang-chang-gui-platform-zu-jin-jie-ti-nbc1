@@ -20,11 +20,13 @@
     <small>营运财务 · 月结</small>
   </aside>
   <div class="work">
+    {% set meta = run['认领清单'] if '认领清单' in run else meta %}
     <header class="topbar">
       <div><span>{{ meta['账期'] }}</span><h1>{{ title }}</h1></div>
-      <a data-export href="{{ url_for('export', run_id=meta['批次']) }}">下载结算凭证</a>
+      {% if '认领清单' not in run %}<a data-export href="{{ url_for('export', run_id=meta['批次']) }}">下载结算凭证</a>{% endif %}
     </header>
     <main class="content">
+      {% if '认领清单' not in run %}
       <section class="kpis" aria-label="月结指标">
         <div><span>应缴 · 元</span><strong id="due">{{ run['金额勾稽']['应缴分']|yuan }}</strong></div>
         <div><span>实缴 · 元</span><strong>{{ run['金额勾稽']['实缴分']|yuan }}</strong></div>
@@ -32,6 +34,8 @@
         <div><span>隔离 · 行</span><strong>{{ run['行数勾稽']['隔离'] }}</strong></div>
         <div><span>行数差额</span><strong>{{ run['行数勾稽']['差额行'] }}</strong></div>
       </section>
+      {% endif %}
+      {% if '认领清单' not in run %}
       <form id="run-form" method="post" action="/api/runs" enctype="multipart/form-data">
         <input type="hidden" name="stage" value="{{ active }}">
         <label>账期<input name="period" type="month" required value="{{ meta['账期'] }}"></label>
@@ -40,9 +44,10 @@
         <button type="submit">运行结算</button>
         <output id="run-feedback" role="status">{% if reused %}已复用该批次{% endif %}</output>
       </form>
+      {% endif %}
       {% block stage %}{% endblock %}
     </main>
-    <footer><span>批次 <code>{{ meta['批次'] }}</code></span><span>{{ meta['规则'] }} · {{ meta['生成时间'] }} · {{ meta['营业时区'] }}</span></footer>
+    <footer><span>批次 <code>{{ meta['批次'] if '批次' in meta else meta['认领批次'] }}</code></span><span>{{ meta['规则'] }} · {{ meta['生成时间'] }} · {{ meta['营业时区'] if '营业时区' in meta else meta['账期'] }}</span></footer>
   </div>
 </body>
 </html>

@@ -5,6 +5,7 @@ from app.errors import InputError
 from app.modules import STAGES, register
 from app.modules.m7_publish.export import evidence_pack
 from app.modules.m7_publish.service import run_once
+from app.modules.m8_claim.service import claim_once
 from app.store import RunStore
 from app.web import find_run, sample_bytes, store, yuan
 from flask import Flask, abort, jsonify, render_template, request, url_for
@@ -46,6 +47,8 @@ def create_app(config=None):
         chosen = request.args.get("run")
         if chosen:
             run = find_run(chosen)
+        elif stage == "claim":
+            run, _ = claim_once(store(), sample_bytes("vouchers"), DEFAULT_PERIOD)
         else:
             run, _ = run_once(store(), sample_bytes("mall"), DEFAULT_PERIOD)
         keys = {
@@ -56,6 +59,7 @@ def create_app(config=None):
             "refunds": ("旧期回冲", "退单证据"),
             "reconcile": ("柜台对账",),
             "publish": (),
+            "claim": ("凭证核销", "柜台认领", "待认领余款", "凭证隔离"),
         }[stage]
         return render_template(
             f"{stage}.html",
@@ -63,7 +67,7 @@ def create_app(config=None):
             title=stage_titles[stage],
             stages=STAGES,
             run=run,
-            meta=run["运行清单"],
+            meta=run["运行清单"] if "运行清单" in run else run["认领清单"],
             keys=keys,
             samples=SAMPLES,
             sample=request.args.get("sample", "mall"),
